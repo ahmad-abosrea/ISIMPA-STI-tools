@@ -34,15 +34,41 @@ jobs:
       - name: Install pytest
         run: python -m pip install --upgrade pip pytest
 
-      - name: Show interpreter
-        run: python -c "import sys; print(sys.version)"
+      - name: Environment
+        run: |
+          python -c "import sys; print('python :', sys.version)"
+          python -m pip --version
+          python -m pytest --version
 
+      # On failure the pytest output is re-emitted as a workflow error
+      # annotation. Job logs need an authenticated API call to retrieve,
+      # whereas annotations are readable from the public check-runs
+      # endpoint -- so this makes a red build diagnosable by anyone.
       - name: Run the test suite
-        run: python -m pytest tests/ -q
+        run: |
+          set +e
+          python -m pytest tests/ -q --tb=short > pytest-output.txt 2>&1
+          code=$?
+          cat pytest-output.txt
+          if [ $code -ne 0 ]; then
+            msg=$(tail -c 3000 pytest-output.txt | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=pytest failed on Python ${{ matrix.python }}::$msg"
+          fi
+          exit $code
 
       # The tools themselves are loaded by I-Simpa's embedded interpreter,
-      # not imported by the tests directly, so a syntax error in one could
-      # otherwise reach a user unnoticed. This compiles every file on the
-      # target interpreter.
+      # not imported by the tests, so a syntax error in one could otherwise
+      # reach a user unnoticed. This compiles every file on the target
+      # interpreter.
       - name: Byte-compile the tools for this interpreter
-        run: python -m compileall -q UserScript
+        if: always()
+        run: |
+          set +e
+          python -m compileall -q UserScript > compile-output.txt 2>&1
+          code=$?
+          cat compile-output.txt
+          if [ $code -ne 0 ]; then
+            msg=$(tail -c 2000 compile-output.txt | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=compileall failed on Python ${{ matrix.python }}::$msg"
+          fi
+          exit $code
