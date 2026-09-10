@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # I-Simpa embeds Python 3.8.1, so the tools MUST run there.
+          # 3.8 is end of life and is not in the tool cache on newer
+          # runners, hence the pinned 22.04 image.
+          - os: ubuntu-22.04
+            python: "3.8"
+          # A current interpreter, to catch anything that only breaks on
+          # newer Python.
+          - os: ubuntu-latest
+            python: "3.14"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Show interpreter
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Run the test suite
+        run: python -m pytest tests/ -q
+
+      # The tools themselves are loaded by I-Simpa's embedded interpreter,
+      # not imported by the tests directly, so a syntax error in one could
+      # otherwise reach a user unnoticed. This compiles every file on the
+      # target interpreter.
+      - name: Byte-compile the tools for this interpreter
+        run: python -m compileall -q UserScript

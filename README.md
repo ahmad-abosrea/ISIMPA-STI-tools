@@ -1,5 +1,7 @@
 # ISIMPA-STI-tools
 
+[![tests](https://github.com/ahmad-abosrea/ISIMPA-STI-tools/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmad-abosrea/ISIMPA-STI-tools/actions/workflows/tests.yml)
+
 Speech-intelligibility post-processing for I-Simpa.
 
 Python plugins that add **STI** (Speech Transmission Index, IEC 60268-16)
@@ -92,7 +94,8 @@ STI-derived value is the one to trust.
 python -m pytest tests/ -q
 ```
 
-145 tests, no third-party dependencies. They run against fake `uictrl` and
+145 tests, no third-party dependencies. They are run automatically on
+Python 3.8 (the version I-Simpa embeds) and on a current Python. They run against fake `uictrl` and
 `libsimpa` modules that reproduce I-Simpa's real data layout, so no
 installation of I-Simpa is needed.
 
