@@ -379,10 +379,19 @@ def install():
 
 def uictrl_application_getuserinput_swap(new_fn):
     """Swaps the fake getuserinput and returns the previous one, so a test
-    can inspect exactly which dialog fields a tool asks for."""
+    can inspect exactly which dialog fields a tool asks for.
+
+    NOTE: assign the plain function, NOT staticmethod(new_fn).
+    `uictrl.application` is an INSTANCE, and instance attributes do not go
+    through the descriptor protocol -- so a staticmethod object stored here
+    is handed back raw when the tool calls it. Python 3.10 made
+    staticmethod objects directly callable, but I-Simpa embeds Python
+    3.8.1, where that raises "TypeError: 'staticmethod' object is not
+    callable". Wrapping it here therefore passes on a modern interpreter
+    and fails on the one that actually matters."""
     uictrl = sys.modules["uictrl"]
     previous = uictrl.application.getuserinput
-    uictrl.application.getuserinput = staticmethod(new_fn)
+    uictrl.application.getuserinput = new_fn
     return previous
 
 

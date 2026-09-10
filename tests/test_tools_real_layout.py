@@ -396,3 +396,28 @@ def test_schroeder_estimate_is_reported_for_an_spps_receiver(capsys):
     sti_tool.ComputeSTI(fx.RECEIVER_FOLDER_ID)
     assert "SCHROEDER" in capsys.readouterr().out
     assert any("Schroeder" in k for k in fx.written_columns())
+
+
+def test_swapped_getuserinput_is_stored_as_a_plain_callable():
+    """Regression guard for a bug that only showed on Python 3.8.
+
+    `uictrl.application` is an instance, and instance attributes bypass the
+    descriptor protocol -- so a staticmethod object stored there is handed
+    back raw when a tool calls it. Python 3.10 made staticmethod objects
+    directly callable, so wrapping it passed on a modern interpreter and
+    raised "TypeError: 'staticmethod' object is not callable" on the 3.8.1
+    that I-Simpa actually embeds. This makes the mistake fail everywhere."""
+    import sys as _sys
+
+    original = fx.uictrl_application_getuserinput_swap(
+        lambda title, msg, fields: (False, {}))
+    try:
+        stored = _sys.modules["uictrl"].application.__dict__.get("getuserinput")
+        assert stored is not None
+        assert not isinstance(stored, staticmethod), (
+            "staticmethod stored on an INSTANCE: callable on 3.10+, "
+            "TypeError on I-Simpa's Python 3.8.1")
+        assert callable(stored)
+        assert stored("t", "m", {}) == (False, {})
+    finally:
+        fx.uictrl_application_getuserinput_swap(original)

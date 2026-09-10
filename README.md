@@ -94,7 +94,7 @@ STI-derived value is the one to trust.
 python -m pytest tests/ -q
 ```
 
-145 tests, no third-party dependencies. They are run automatically on
+146 tests, no third-party dependencies. They are run automatically on
 Python 3.8 (the version I-Simpa embeds) and on a current Python. They run against fake `uictrl` and
 `libsimpa` modules that reproduce I-Simpa's real data layout, so no
 installation of I-Simpa is needed.
