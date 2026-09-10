@@ -13,20 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
-import sys
-
-_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-def _userscript_dir():
-    return os.path.join(_REPO, "UserScript")
-
-
-def _tool_dir(name):
-    return os.path.join(_REPO, "UserScript", name)
-
-
 """
 Tests for alcons_tool, which now implements ONE method: the energetic form
 
@@ -49,7 +35,6 @@ import pytest
 import isimpa_fixtures as fx
 
 fx.install()
-sys.path.insert(0, _userscript_dir())
 import alcons_tool  # noqa: E402
 
 
@@ -599,3 +584,20 @@ def test_labels_and_values_stay_aligned():
     _, cols = list(fx.GABE_WRITES.items())[0]
     lengths = {name: len(values) for name, values in cols}
     assert len(set(lengths.values())) == 1, lengths
+
+
+def test_console_guidance_agrees_with_the_results_table(capsys):
+    """The report and the results file must not name different winners.
+    They briefly did: the table said "REPORT THIS" on the STI-derived row
+    while the console said the energy-based one was primary."""
+    _reset()
+    alcons_tool.ComputeALcons(fx.RECEIVER_FOLDER_ID)
+    text = capsys.readouterr().out
+    labels = " | ".join(fx.written_columns().keys())
+
+    assert "REPORT THIS" in labels
+    reported = [l for l in fx.written_columns() if "REPORT THIS" in l][0]
+    assert "from STI" in reported                       # the table's choice
+    assert "WHICH TO REPORT" in text                    # console explains it
+    assert "report this one" in text                    # and agrees
+    assert "the primary result above is the energy-based one" not in text

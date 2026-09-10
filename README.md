@@ -92,7 +92,7 @@ STI-derived value is the one to trust.
 python -m pytest tests/ -q
 ```
 
-144 tests, no third-party dependencies. They run against fake `uictrl` and
+145 tests, no third-party dependencies. They run against fake `uictrl` and
 `libsimpa` modules that reproduce I-Simpa's real data layout, so no
 installation of I-Simpa is needed.
 

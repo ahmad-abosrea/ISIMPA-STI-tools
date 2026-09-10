@@ -619,8 +619,14 @@ def _report_cross_check(sti, alcons_sti, trusted, divergence,
     print(ui._(
         "      Empirical conversion 170.54*exp(-5.419*STI), attributed to "
         "Farrel Becker. NOT part of IEC 60268-16, and its own publisher "
-        "notes it should be treated with some doubt. Reported only as a "
-        "cross-check; the primary result above is the energy-based one."))
+        "notes it should be treated with some doubt."))
+    print(ui._(
+        "      WHICH TO REPORT: the energy-based value above is the direct "
+        "physical estimate, but its direct/reverberant split degrades as "
+        "(number of sources x time step) grows, and it cannot see background "
+        "noise at all. This STI-derived value inherits the real echogram, "
+        "the noise and the hearing model, so for a multi-source model, or "
+        "whenever the two disagree, report this one."))
     if not trusted:
         print(ui._(
             "      NOTE: below STI 0.20 this fit is extrapolation and the "
