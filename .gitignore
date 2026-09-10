@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+# benchmark impulse response - downloaded from the AIJ page, not redistributed
+tests/a21.fb
+tests/a21.wav
